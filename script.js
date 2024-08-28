@@ -1,16 +1,12 @@
 // ==UserScript==
-// @name         DOM Extract and Simulate Typing
+// @name         DOM Extract and Simulate Typing with reCAPTCHA Position Sending
 // @namespace    http://tampermonkey.net/
-// @version      0.2
-// @description  Extracts data from the DOM and simulates typing it into an input field
+// @version      0.3
+// @description  Extracts data from the DOM, simulates typing it into an input field, and sends reCAPTCHA position to a server
 // @author       Your Name
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
-
-// click on this recaptcha-checkbox it is a class, maybe just an event would work to click on it
-// also this was not a button it was the other thing
-// then press on this button btn btn--primary btn--fw
 
 (function() {
     'use strict';
@@ -18,17 +14,28 @@
     const url = 'http://127.0.0.1:5000/type';
     const urlNext = 'http://127.0.0.1:5000/next';
     const urlPause = 'http://127.0.0.1:5000/pause';
-    
-        // Function to click elements when they appear on the screen
-    function clickWhenElementAppears(selector) {
+    const urlClick = 'http://127.0.0.1:5000/click'; // URL to send captcha position to
+
+    // Function to click elements when they appear on the screen and send position to the server
+    function clickWhenElementAppears(selector, isCaptcha) {
         const observer = new MutationObserver((mutationsList, observer) => {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList' || mutation.type === 'subtree') {
                     const elements = document.querySelectorAll(selector);
                     elements.forEach(element => {
                         if (element && element.offsetParent !== null) { // Check if the element is visible
-                            element.click();
-                            console.log(`Clicked on element: ${selector}`);
+                            if (isCaptcha) {
+                                setTimeout(() => {
+                                    const elementPosition = getElementPosition(selector);
+                                    if (elementPosition) {
+                                        sendPositionToServer(elementPosition);
+                                    }
+                                    console.log(`Clicked on element: ${selector}`);
+                                }, 100);
+                            } else {
+                                element.click();
+                            }
+                            observer.disconnect();
                         }
                     });
                 }
@@ -37,6 +44,30 @@
 
         // Start observing the document body or a specific element
         observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    function getElementPosition(selector) {
+        const element = document.querySelector(selector);
+        if (element) {
+            const rect = element.getBoundingClientRect();
+            return { x: rect.left + window.scrollX, y: rect.top + window.scrollY };
+        }
+        return null;
+    }
+
+    // Function to send the position to the server
+    function sendPositionToServer(position) {
+        console.log(position);
+        fetch(urlClick, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(position)
+        })
+        .then(response => response.text())
+        .then(data => console.log('Position sent:', data))
+        .catch(error => console.error('Error:', error));
     }
 
     // Function to start typing when the class "is-racing" appears
@@ -69,7 +100,7 @@
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ text: text})
+            body: JSON.stringify({ text: text })
         })
         .then(response => response.text())
         .then(data => console.log(data))
@@ -116,10 +147,15 @@
 
     // Start watching for the "is-racing" class to appear
     startTypingWhenClassAppears('is-racing');
-    
-        // Watch for the appearance of the recaptcha-checkbox and click it
-    clickWhenElementAppears('.recaptcha-checkbox');
+
+    // Watch for the appearance of the recaptcha-checkbox and send its position
+    clickWhenElementAppears('.recaptcha-checkbox', true);
+
+    clickWhenElementAppears('.daily-challenge-completed-notification--cta.btn.btn--tertiary', false);
+
+    // Test click in garage
+    //clickWhenElementAppears('.season-reward-mini-previewImg', false);
 
     // Watch for the appearance of the button with the class btn btn--primary btn--fw and click it
-    clickWhenElementAppears('.btn.btn--primary.btn--fw');
+    // clickWhenElementAppears('.btn.btn--primary.btn--fw');
 })();

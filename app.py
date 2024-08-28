@@ -10,16 +10,16 @@ app = Flask(__name__)
 # Constants/Settings for Race
 TIME_BETWEEN_RACE = 3  # Seconds
 AUTOMATE_RACES = True
-RACE_COUNT = 70
-WPM = 80
-ACCURACY = 97  # in percent
+RACE_COUNT = 36
+WPM = 160
+ACCURACY = 99  # in percent
 CONTINUE_TYPING = True  # New global flag to control typing
 
 # Set global delay in seconds
 pyautogui.PAUSE = 4 / WPM  # Equation to set delay based on WPM
 
 # Apply CORS with specific configuration
-CORS(app, resources={r"/type": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 @app.route('/type', methods=['POST'])
 def type_text():
@@ -68,8 +68,11 @@ def find_longest_word(word_list):
 def adjust_for_accuracy():
     if ACCURACY != 100:
         chance = random.random()
+        wait_chance = random.random()
         if chance > ACCURACY / 100:
             pyautogui.press(random.choice(string.ascii_lowercase))
+            if wait_chance > 0.75:
+                time.sleep(1)
 
 def adjust_wpm():
     wpm_temp = random.randint(WPM - 10, WPM + 10)
@@ -100,6 +103,30 @@ def next_race():
 
     CONTINUE_TYPING = True  # Reset typing flag for the next race
     return 'No next race', 200
+
+@app.route('/click', methods=['POST'])
+def click_element():
+    data = request.json
+    print(data)
+    x_coor = data['x']
+    y_coor = data['y']
+
+    # Add adjustable offsets
+    x_offset = 0  # Adjust this value if needed
+    y_offset = 150  # Adjust this value if needed
+    
+    # Apply offsets
+    x_coor += x_offset
+    y_coor += y_offset
+
+    # Move the mouse to the reCAPTCHA checkbox
+    pyautogui.moveTo(x_coor, y_coor, duration=0.5)  # Smoothly move the mouse
+
+    # Pause for a brief moment to mimic natural behavior
+    time.sleep(1)
+
+    # Click the checkbox
+    pyautogui.click()   
 
 if __name__ == '__main__':
     app.run(port=5000)
