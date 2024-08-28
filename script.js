@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.3
 // @description  Extracts data from the DOM, simulates typing it into an input field, and sends reCAPTCHA position to a server
-// @author       Your Name
+// @author       Alpine Gingy
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
@@ -149,7 +149,7 @@
     startTypingWhenClassAppears('is-racing');
 
     // Watch for the appearance of the recaptcha-checkbox and send its position
-    clickWhenElementAppears('.recaptcha-checkbox', true);
+    clickWhenElementAppears('.df.df--justify-center', true);
 
     clickWhenElementAppears('.daily-challenge-completed-notification--cta.btn.btn--tertiary', false);
 

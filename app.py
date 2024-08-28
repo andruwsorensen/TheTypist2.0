@@ -10,8 +10,8 @@ app = Flask(__name__)
 # Constants/Settings for Race
 TIME_BETWEEN_RACE = 3  # Seconds
 AUTOMATE_RACES = True
-RACE_COUNT = 36
-WPM = 160
+RACE_COUNT = 50
+WPM = 95
 ACCURACY = 99  # in percent
 CONTINUE_TYPING = True  # New global flag to control typing
 
@@ -19,7 +19,7 @@ CONTINUE_TYPING = True  # New global flag to control typing
 pyautogui.PAUSE = 4 / WPM  # Equation to set delay based on WPM
 
 # Apply CORS with specific configuration
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app)
 
 @app.route('/type', methods=['POST'])
 def type_text():
@@ -112,8 +112,8 @@ def click_element():
     y_coor = data['y']
 
     # Add adjustable offsets
-    x_offset = 0  # Adjust this value if needed
-    y_offset = 150  # Adjust this value if needed
+    x_offset = 100  # Adjust this value if needed
+    y_offset = 180  # Adjust this value if needed
     
     # Apply offsets
     x_coor += x_offset
@@ -123,10 +123,10 @@ def click_element():
     pyautogui.moveTo(x_coor, y_coor, duration=0.5)  # Smoothly move the mouse
 
     # Pause for a brief moment to mimic natural behavior
-    time.sleep(1)
-
-    # Click the checkbox
+    time.sleep(0.5)
     pyautogui.click()   
+    time.sleep(1)
+    pyautogui.press("enter")
 
 if __name__ == '__main__':
     app.run(port=5000)
