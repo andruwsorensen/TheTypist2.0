@@ -1,3 +1,21 @@
+import subprocess
+import sys
+
+# Function to install a package
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# List of required packages
+required_packages = ["flask", "flask-cors", "pyautogui"]
+
+# Install any missing packages
+for package in required_packages:
+    try:
+        __import__(package)
+    except ImportError:
+        install(package)
+
+# Now you can import the packages
 from flask import Flask, request
 from flask_cors import CORS
 import pyautogui
@@ -8,14 +26,14 @@ import string
 app = Flask(__name__)
 
 # Constants/Settings for Race
-TIME_BETWEEN_RACE = 3 # Seconds
+TIME_BETWEEN_RACE = 3  # Seconds
 AUTOMATE_RACES = True
 RACE_COUNT = 30
 WPM = 80
-ACCURACY = 97 # in percent
+ACCURACY = 97  # in percent
 
 # Set global delay in seconds
-pyautogui.PAUSE = 4 / WPM # 1 / (WPM * 3 * 5 / 60) # Equation to make CPS x 2 turning it into seconds
+pyautogui.PAUSE = 4 / WPM  # Equation to set delay based on WPM
 
 # Apply CORS with specific configuration
 CORS(app, resources={r"/type": {"origins": "*"}}, supports_credentials=True)
@@ -24,7 +42,7 @@ CORS(app, resources={r"/type": {"origins": "*"}}, supports_credentials=True)
 def type_text():
     data = request.json
     text = data['text']
-    print("Text: " + text) # Debug
+    print("Text: " + text)  # Debug
     word_list = split_words(text, "\xa0")
     print_words(word_list)
     return 'Typed successfully', 200
@@ -35,7 +53,6 @@ def split_words(string, split_key):
 
 def print_words(word_list):
     longest_word = find_longest_word(word_list)
-    # print("Word List: " + word_list)# Debug
     print("The longest word is '" + longest_word + "' at " + str(len(longest_word)) + " letters.")
 
     for word in word_list:
@@ -64,8 +81,7 @@ def adjust_for_accuracy():
 
 def adjust_wpm():
     wpm_temp = random.randint(WPM - 10, WPM + 10)
-    pyautogui.PAUSE = 4 / wpm_temp # 1 / (wpm_temp * 3 * 5 / 60)
-
+    pyautogui.PAUSE = 4 / wpm_temp
 
 @app.route('/next', methods=['POST'])
 def next_race():
@@ -84,6 +100,3 @@ def next_race():
 
 if __name__ == '__main__':
     app.run(port=5000)
-
-
-#
