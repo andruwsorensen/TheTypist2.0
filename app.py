@@ -8,12 +8,12 @@ import string
 app = Flask(__name__)
 
 # Constants/Settings for Race
-TIME_BETWEEN_RACE = 3  # Seconds
+TIME_BETWEEN_RACE = 2  # Seconds
 AUTOMATE_RACES = True
-RACE_COUNT = 50
-WPM = 95
+RACE_COUNT = 100
+WPM = 110
 ACCURACY = 99  # in percent
-CONTINUE_TYPING = True  # New global flag to control typing
+CONTINUE_TYPING = True  # Global flag to control typing
 
 # Set global delay in seconds
 pyautogui.PAUSE = 4 / WPM  # Equation to set delay based on WPM
@@ -112,7 +112,7 @@ def click_element():
     y_coor = data['y']
 
     # Add adjustable offsets
-    x_offset = 100  # Adjust this value if needed
+    x_offset = 130  # Adjust this value if needed
     y_offset = 180  # Adjust this value if needed
     
     # Apply offsets
@@ -126,7 +126,7 @@ def click_element():
     time.sleep(0.5)
     pyautogui.click()   
     time.sleep(1)
-    pyautogui.press("enter")
+    pyautogui.click()
 
 if __name__ == '__main__':
     app.run(port=5000)

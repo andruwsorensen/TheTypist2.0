@@ -25,13 +25,16 @@
                     elements.forEach(element => {
                         if (element && element.offsetParent !== null) { // Check if the element is visible
                             if (isCaptcha) {
-                                setTimeout(() => {
+                                setTimeout( () => {
                                     const elementPosition = getElementPosition(selector);
                                     if (elementPosition) {
                                         sendPositionToServer(elementPosition);
                                     }
                                     console.log(`Clicked on element: ${selector}`);
                                 }, 100);
+                                setTimeout( () => {
+                                    location.reload()
+                                }, 500);
                             } else {
                                 element.click();
                             }
@@ -57,7 +60,6 @@
 
     // Function to send the position to the server
     function sendPositionToServer(position) {
-        console.log(position);
         fetch(urlClick, {
             method: 'POST',
             headers: {
@@ -152,6 +154,8 @@
     clickWhenElementAppears('.df.df--justify-center', true);
 
     clickWhenElementAppears('.daily-challenge-completed-notification--cta.btn.btn--tertiary', false);
+
+    clickWhenElementAppears('.racev3Pre-action.btn.btn--fw.btn--primary', false);
 
     // Test click in garage
     //clickWhenElementAppears('.season-reward-mini-previewImg', false);
