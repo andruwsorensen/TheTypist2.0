@@ -8,15 +8,16 @@ import string
 app = Flask(__name__)
 
 # Constants/Settings for Race
-TIME_BETWEEN_RACE = 3  # Seconds
+TIME_BETWEEN_RACE = 2  # Seconds
 AUTOMATE_RACES = True
 RACE_COUNT = 50
-WPM = 95
+WPM = 140
 ACCURACY = 99  # in percent
 CONTINUE_TYPING = True  # New global flag to control typing
 
 # Set global delay in seconds
-pyautogui.PAUSE = 4 / WPM  # Equation to set delay based on WPM
+# pyautogui.PAUSE = 4 / WPM  # Equation to set delay based on WPM for Mac
+pyautogui.PAUSE = 1 / (WPM * 10 / 60) # For windows
 
 # Apply CORS with specific configuration
 CORS(app)
@@ -76,7 +77,8 @@ def adjust_for_accuracy():
 
 def adjust_wpm():
     wpm_temp = random.randint(WPM - 10, WPM + 10)
-    pyautogui.PAUSE = 4 / wpm_temp
+    # pyautogui.PAUSE = 4 / wpm_temp # For Mac
+    pyautogui.PAUSE = 1 / (wpm_temp * 10 / 60) # For Windows
 
 @app.route('/pause', methods=['POST'])
 def pause_typing():
