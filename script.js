@@ -34,7 +34,7 @@
                                 }, 100);
                                 setTimeout( () => {
                                     location.reload()
-                                }, 500);
+                                }, 5000);
                             } else {
                                 element.click();
                             }
@@ -151,7 +151,7 @@
     startTypingWhenClassAppears('is-racing');
 
     // Watch for the appearance of the recaptcha-checkbox and send its position
-    clickWhenElementAppears('.df.df--justify-center', true);
+    // clickWhenElementAppears('.df.df--justify-center', true);
 
     clickWhenElementAppears('.daily-challenge-completed-notification--cta.btn.btn--tertiary', false);
 
