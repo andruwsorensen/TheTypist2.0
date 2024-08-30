@@ -159,7 +159,4 @@
 
     // Test click in garage
     //clickWhenElementAppears('.season-reward-mini-previewImg', false);
-
-    // Watch for the appearance of the button with the class btn btn--primary btn--fw and click it
-    // clickWhenElementAppears('.btn.btn--primary.btn--fw');
 })();
