@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOM Extract and Simulate Typing with reCAPTCHA Position Sending
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.6
 // @description  Extracts data from the DOM, simulates typing it into an input field, and sends reCAPTCHA position to a server
 // @author       Alpine Gingy
 // @match        *://*/*
@@ -16,31 +16,39 @@
     const urlPause = 'http://127.0.0.1:5000/pause';
     const urlClick = 'http://127.0.0.1:5000/click'; // URL to send captcha position to
 
+    // Function to find reCAPTCHA iframe
+    function findReCaptchaIframe() {
+        return document.querySelector('iframe[title*="recaptcha" i]');
+    }
+
     // Function to click elements when they appear on the screen and send position to the server
     function clickWhenElementAppears(selector, isCaptcha) {
         const observer = new MutationObserver((mutationsList, observer) => {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList' || mutation.type === 'subtree') {
-                    const elements = document.querySelectorAll(selector);
-                    elements.forEach(element => {
-                        if (element && element.offsetParent !== null) { // Check if the element is visible
-                            if (isCaptcha) {
-                                setTimeout( () => {
-                                    const elementPosition = getElementPosition(selector);
-                                    if (elementPosition) {
-                                        sendPositionToServer(elementPosition);
-                                    }
-                                    console.log(`Clicked on element: ${selector}`);
-                                }, 100);
-                                setTimeout( () => {
-                                    location.reload()
-                                }, 5000);
-                            } else {
-                                element.click();
-                            }
-                            observer.disconnect();
+                    let element;
+                    if (isCaptcha) {
+                        element = findReCaptchaIframe();
+                    } else {
+                        element = document.querySelector(selector);
+                    }
+                    if (element && element.offsetParent !== null) { // Check if the element is visible
+                        if (isCaptcha) {
+                            setTimeout( () => {
+                                const elementPosition = getElementPosition(element);
+                                if (elementPosition) {
+                                    sendPositionToServer(elementPosition);
+                                }
+                                console.log(`Detected reCAPTCHA iframe at position:`, elementPosition);
+                            }, 100);
+                            setTimeout( () => {
+                                location.reload()
+                            }, 5000);
+                        } else {
+                            element.click();
                         }
-                    });
+                        observer.disconnect();
+                    }
                 }
             }
         });
@@ -49,8 +57,7 @@
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    function getElementPosition(selector) {
-        const element = document.querySelector(selector);
+    function getElementPosition(element) {
         if (element) {
             const rect = element.getBoundingClientRect();
             return { x: rect.left + window.scrollX, y: rect.top + window.scrollY };
@@ -150,8 +157,8 @@
     // Start watching for the "is-racing" class to appear
     startTypingWhenClassAppears('is-racing');
 
-    // Watch for the appearance of the recaptcha-checkbox and send its position
-    // clickWhenElementAppears('.df.df--justify-center', true);
+    // Watch for the appearance of the reCAPTCHA iframe and send its position
+    clickWhenElementAppears(null, true);
 
     clickWhenElementAppears('.daily-challenge-completed-notification--cta.btn.btn--tertiary', false);
 

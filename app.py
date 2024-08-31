@@ -224,8 +224,8 @@ def click_element():
     y_coor = data['y']
 
     # Add adjustable offsets
-    x_offset = 130  # Adjust this value if needed
-    y_offset = 180  # Adjust this value if needed
+    x_offset = 300  # Adjust this value if needed
+    y_offset = 280  # Adjust this value if needed
     
     # Apply offsets
     x_coor += x_offset
