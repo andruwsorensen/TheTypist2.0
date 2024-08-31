@@ -224,8 +224,8 @@ def click_element():
     y_coor = data['y']
 
     # Add adjustable offsets
-    x_offset = 300  # Adjust this value if needed
-    y_offset = 280  # Adjust this value if needed
+    x_offset = 130  # Adjust this value if needed
+    y_offset = 180  # Adjust this value if needed
     
     # Apply offsets
     x_coor += x_offset
@@ -239,6 +239,13 @@ def click_element():
     pyautogui.click()   
     time.sleep(1)
     pyautogui.click()
+
+@app.route('/track', methods=['POST'])
+def click_number():
+    rand_num = random.randint(1, 6)
+    time.sleep(1)
+    pyautogui.press(str(rand_num))
+    return 'Number sent', 200
 
 # Modified: New main block to run both PyQt and Flask
 if __name__ == '__main__':

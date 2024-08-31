@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         DOM Extract and Simulate Typing with reCAPTCHA Position Sending
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.8
 // @description  Extracts data from the DOM, simulates typing it into an input field, and sends reCAPTCHA position to a server
 // @author       Alpine Gingy
-// @match        *://*/*
+// @match        https://www.nitrotype.com/*
 // @grant        none
 // ==/UserScript==
 
@@ -14,14 +14,13 @@
     const url = 'http://127.0.0.1:5000/type';
     const urlNext = 'http://127.0.0.1:5000/next';
     const urlPause = 'http://127.0.0.1:5000/pause';
-    const urlClick = 'http://127.0.0.1:5000/click'; // URL to send captcha position to
+    const urlClick = 'http://127.0.0.1:5000/click';
+    const urlTrack = 'http://127.0.0.1:5000/track';
 
-    // Function to find reCAPTCHA iframe
     function findReCaptchaIframe() {
         return document.querySelector('iframe[title*="recaptcha" i]');
     }
 
-    // Function to click elements when they appear on the screen and send position to the server
     function clickWhenElementAppears(selector, isCaptcha) {
         const observer = new MutationObserver((mutationsList, observer) => {
             for (const mutation of mutationsList) {
@@ -32,16 +31,16 @@
                     } else {
                         element = document.querySelector(selector);
                     }
-                    if (element && element.offsetParent !== null) { // Check if the element is visible
+                    if (element && element.offsetParent !== null) {
                         if (isCaptcha) {
-                            setTimeout( () => {
+                            setTimeout(() => {
                                 const elementPosition = getElementPosition(element);
                                 if (elementPosition) {
                                     sendPositionToServer(elementPosition);
                                 }
                                 console.log(`Detected reCAPTCHA iframe at position:`, elementPosition);
                             }, 100);
-                            setTimeout( () => {
+                            setTimeout(() => {
                                 location.reload()
                             }, 5000);
                         } else {
@@ -53,7 +52,6 @@
             }
         });
 
-        // Start observing the document body or a specific element
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
@@ -65,7 +63,6 @@
         return null;
     }
 
-    // Function to send the position to the server
     function sendPositionToServer(position) {
         fetch(urlClick, {
             method: 'POST',
@@ -79,30 +76,31 @@
         .catch(error => console.error('Error:', error));
     }
 
-    // Function to start typing when the class "is-racing" appears
     function startTypingWhenClassAppears(className) {
         const observer = new MutationObserver((mutationsList, observer) => {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const targetElement = mutation.target;
                     if (targetElement.classList.contains(className)) {
-                        observer.disconnect(); // Stop observing once the class is detected
-                        extractAndSendText(); // Start typing simulation
-                        nextScreen('is-race-results'); // Call nextScreen with the appropriate class
+                        observer.disconnect();
+                        extractAndSendText();
+                        nextScreen('is-race-results');
                         break;
                     }
                 }
             }
         });
 
-        // Start observing the document body or a specific element
         observer.observe(document.body, { attributes: true, subtree: true });
     }
 
-    // Function to extract text and send it to the server
     function extractAndSendText() {
         let text = Array.from(document.querySelectorAll('span.dash-letter')).map(span => span.textContent);
         text = text.join('');
+        console.log(text);
+        if (text.length == 0) {
+            text = '1';
+        }
 
         fetch(url, {
             method: 'POST',
@@ -116,15 +114,13 @@
         .catch(error => console.error('Error:', error));
     }
 
-    // Function to handle moving to the next screen
     function nextScreen(className) {
         const observer = new MutationObserver((mutationsList, observer) => {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const targetElement = mutation.target;
                     if (targetElement.classList.contains(className)) {
-                        observer.disconnect(); // Stop observing once the class is detected
-                        // Send a POST request to the server
+                        observer.disconnect();
                         fetch(urlNext, {
                             method: 'POST'
                         })
@@ -137,14 +133,33 @@
             }
         });
 
-        // Start observing the document body or a specific element
         observer.observe(document.body, { attributes: true, subtree: true });
     }
 
-    // Detect when the tab visibility changes
+    function detectTrackClass() {
+        function checkForTrackClass() {
+            const trackElement = document.querySelector('.racev3-track');
+            if (trackElement) {
+                console.log('Track class detected on page load');
+                fetch(urlTrack, {
+                    method: 'POST'
+                })
+                .then(response => response.text())
+                .then(data => console.log('Track detected:', data))
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        // Start checking when the DOM is fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkForTrackClass);
+        } else {
+            checkForTrackClass();
+        }
+    }
+
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            // Tab is inactive or hidden
             fetch(urlPause, {
                 method: 'POST'
             })
@@ -154,16 +169,9 @@
         }
     });
 
-    // Start watching for the "is-racing" class to appear
     startTypingWhenClassAppears('is-racing');
-
-    // Watch for the appearance of the reCAPTCHA iframe and send its position
     clickWhenElementAppears(null, true);
-
     clickWhenElementAppears('.daily-challenge-completed-notification--cta.btn.btn--tertiary', false);
-
     clickWhenElementAppears('.racev3Pre-action.btn.btn--fw.btn--primary', false);
-
-    // Test click in garage
-    //clickWhenElementAppears('.season-reward-mini-previewImg', false);
+    detectTrackClass();
 })();
