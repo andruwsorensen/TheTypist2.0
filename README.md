@@ -1,6 +1,6 @@
 # TheTypist2.0
 
-TheTypist2.0 is an automated typing tool designed to simulate human typing in web-based typing tests or games. It consists of a Python backend using Flask and a frontend userscript for browser interaction. I previously tried to make this app in the past using C# and an OCR, but that did not work as intended so I tried again using the DOM and a flask server and it works perfect.
+TheTypist2.0 is an automated typing tool designed to simulate human typing in web-based typing tests or games. It consists of a Python backend using Flask and a frontend userscript for browser interaction. I previously tried to make this app in the past using C# and an OCR, but that did not work as intended so I tried again using the DOM and a flask server and it works perfect. It was inspired for a game online called nitrotype.com when I was trying to improve my typing, I thought it would be fun to automate the racing in that game.
 
 ## Features
 
