@@ -22,7 +22,7 @@ TheTypist2.0 is an automated typing tool designed to simulate human typing in we
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/TheTypist2.0.git
+   git clone https://github.com/andruwsorensen/TheTypist2.0.git
    cd TheTypist2.0
    ```
 
