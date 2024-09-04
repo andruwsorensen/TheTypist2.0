@@ -108,6 +108,8 @@ class MainWindow(QMainWindow):
 
             race_count = self.findChild(QLineEdit, "race_count").text()
             current_settings['RACE_COUNT'] = int(race_count) if race_count else 100
+            global AUTOMATE_RACES
+            AUTOMATE_RACES = True
 
             wpm = self.findChild(QLineEdit, "wpm").text()
             current_settings['WPM'] = int(wpm) if wpm else 110
