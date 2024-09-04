@@ -6,8 +6,9 @@ import random
 import string
 import platform
 # New imports for PyQt5
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSplitter
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtGui import QIcon, QFont
 import sys
 
 app = Flask(__name__)
@@ -19,14 +20,18 @@ RACE_COUNT = 50
 WPM = 100
 ACCURACY = 99  # in percent
 CONTINUE_TYPING = True  # Global flag to control typing
+X_OFFSET = 180  # Adjust this value if needed
+Y_OFFSET = 280  # Adjust this value if needed
 
 # New: Global dictionary to store current settings
 current_settings = {
     'TIME_BETWEEN_RACE': TIME_BETWEEN_RACE,
     'RACE_COUNT': RACE_COUNT,
     'WPM': WPM,
-    'ACCURACY': ACCURACY
-}
+    'ACCURACY': ACCURACY,
+    'X_OFFSET': X_OFFSET,
+    'Y_OFFSET': Y_OFFSET
+    }
 
 # Set global delay in seconds
 pyautogui.PAUSE = 1 / (WPM * 10 / 60) # For windows
@@ -52,8 +57,9 @@ class FlaskThread(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Typing Automation Control")
+        self.setWindowTitle("TheTypist2.0")
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setWindowIcon(QIcon("assets/keyboard.png"))
         
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -64,9 +70,10 @@ class MainWindow(QMainWindow):
         self.create_input_field("WPM", "wpm", WPM)
         self.create_input_field("Accuracy (%)", "accuracy", ACCURACY)
 
-        self.server_button = QPushButton("Start Server")
-        self.server_button.clicked.connect(self.toggle_server)
-        self.layout.addWidget(self.server_button)
+        CAPTCHA_label = QLabel("reCAPTCHA Offsets")
+        self.layout.addWidget(CAPTCHA_label)
+        self.create_input_field("X Offset", "x_offset", X_OFFSET)
+        self.create_input_field("Y Offset", "y_offset", Y_OFFSET)
 
         self.flask_thread = FlaskThread()
         self.server_running = False
@@ -80,6 +87,8 @@ class MainWindow(QMainWindow):
         self.findChild(QLineEdit, "race_count").textChanged.connect(self.update_constants)
         self.findChild(QLineEdit, "wpm").textChanged.connect(self.update_constants)
         self.findChild(QLineEdit, "accuracy").textChanged.connect(self.update_constants)
+        self.findChild(QLineEdit, "x_offset").textChanged.connect(self.update_constants)
+        self.findChild(QLineEdit, "y_offset").textChanged.connect(self.update_constants)
 
     def create_input_field(self, label_text, attribute_name, initial_value):
         layout = QHBoxLayout()
@@ -89,17 +98,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(label)
         layout.addWidget(input_field)
         self.layout.addLayout(layout)
-
-    def toggle_server(self):
-        if not self.server_running:
-            self.update_constants()
-            self.flask_thread.start()
-            self.server_button.setText("Stop Server")
-            self.server_running = True
-        else:
-            # Implement a way to stop the Flask server (not trivial)
-            self.server_button.setText("Start Server")
-            self.server_running = False
 
     def update_constants(self):
         global current_settings
@@ -119,6 +117,12 @@ class MainWindow(QMainWindow):
 
             wpm = current_settings.get('WPM', 0)
             adjust_pyautogui_pause(wpm)
+
+            x_offset = self.findChild(QLineEdit, "x_offset").text()
+            current_settings['X_OFFSET'] = int(x_offset) if x_offset else 0
+
+            y_offset = self.findChild(QLineEdit, "y_offset").text()
+            current_settings['Y_OFFSET'] = int(y_offset) if y_offset else 0
 
             # Update the races left label
             self.races_left_label.setText(f"Races left: {current_settings['RACE_COUNT']}")
@@ -222,14 +226,10 @@ def click_element():
     print(data)
     x_coor = data['x']
     y_coor = data['y']
-
-    # Add adjustable offsets
-    x_offset = 130  # Adjust this value if needed
-    y_offset = 180  # Adjust this value if needed
     
     # Apply offsets
-    x_coor += x_offset
-    y_coor += y_offset
+    x_coor += X_OFFSET
+    y_coor += Y_OFFSET
 
     # Move the mouse to the reCAPTCHA checkbox
     pyautogui.moveTo(x_coor, y_coor, duration=0.5)  # Smoothly move the mouse
