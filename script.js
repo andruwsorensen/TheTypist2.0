@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOM Extract and Simulate Typing with reCAPTCHA Position Sending
 // @namespace    http://tampermonkey.net/
-// @version      0.8
+// @version      0.9
 // @description  Extracts data from the DOM, simulates typing it into an input field, and sends reCAPTCHA position to a server
 // @author       Alpine Gingy
 // @match        https://www.nitrotype.com/*
@@ -21,26 +21,16 @@
         return document.querySelector('iframe[title*="recaptcha" i]');
     }
 
-    function clickWhenElementAppears(selector, isCaptcha, buttonText = null) {
+    function clickWhenElementAppears(selector, isCaptcha) {
         const observer = new MutationObserver((mutationsList, observer) => {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList' || mutation.type === 'subtree') {
                     let element;
-    
                     if (isCaptcha) {
                         element = findReCaptchaIframe();
                     } else {
-                        if (buttonText) {
-                            // Find button by class and text content
-                            element = Array.from(document.querySelectorAll(selector))
-                                .find(el => el.textContent.trim() === buttonText);
-                        } else {
-                            // Use the selector directly if buttonText is not provided
-                            element = document.querySelector(selector);
-                        }
+                        element = document.querySelector(selector);
                     }
-    
-                    // Check if the element is found and visible
                     if (element && element.offsetParent !== null) {
                         if (isCaptcha) {
                             setTimeout(() => {
@@ -56,16 +46,14 @@
                         } else {
                             element.click();
                         }
-                        // Stop observing once the element is found and clicked
                         observer.disconnect();
                     }
                 }
             }
         });
-    
+
         observer.observe(document.body, { childList: true, subtree: true });
     }
-    
 
     function getElementPosition(element) {
         if (element) {
@@ -170,6 +158,23 @@
         }
     }
 
+    function detectWarningIconClass() {
+        const observer = new MutationObserver((mutationsList, observer) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList' || mutation.type === 'subtree') {
+                    const warningIcon = document.querySelector('.icon.icon-warn.modal-alertIcon');
+                    if (warningIcon) {
+                        console.log('Warning icon detected, refreshing page...');
+                        location.reload();
+                        observer.disconnect(); // Stop observing after refresh is triggered
+                    }
+                }
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             fetch(urlPause, {
@@ -185,6 +190,6 @@
     clickWhenElementAppears(null, true);
     clickWhenElementAppears('.daily-challenge-completed-notification--cta.btn.btn--tertiary', false);
     clickWhenElementAppears('.racev3Pre-action.btn.btn--fw.btn--primary', false);
-    clickWhenElementAppears('.btn.btn--light.btn--fw', false, 'Race Again');
     detectTrackClass();
+    detectWarningIconClass(); // Add the new function here
 })();
