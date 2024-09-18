@@ -13,6 +13,9 @@ import sys
 
 app = Flask(__name__)
 
+# Apply CORS with specific configuration
+CORS(app, supports_credentials=True)
+
 # Constants/Settings for Race
 TIME_BETWEEN_RACE = 2  # Seconds
 AUTOMATE_RACES = True
@@ -36,8 +39,6 @@ current_settings = {
 # Set global delay in seconds
 pyautogui.PAUSE = 1 / (WPM * 10 / 60) # For windows
 
-# Apply CORS with specific configuration
-CORS(app)
 
 def adjust_pyautogui_pause(wpm):
     if wpm > 0:
@@ -230,8 +231,8 @@ def click_element():
     y_coor = data['y']
     
     # Apply offsets
-    x_coor += X_OFFSET
-    y_coor += Y_OFFSET
+    x_coor += current_settings["X_OFFSET"]
+    y_coor += current_settings["Y_OFFSET"]
 
     # Move the mouse to the reCAPTCHA checkbox
     pyautogui.moveTo(x_coor, y_coor, duration=0.5)  # Smoothly move the mouse
