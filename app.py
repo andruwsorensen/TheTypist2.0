@@ -215,7 +215,7 @@ def next_race():
         window.races_left_label.setText(f"Races left: {current_settings['RACE_COUNT']}")
         
         time.sleep(current_settings['TIME_BETWEEN_RACE'])
-        pyautogui.press("enter")
+        pyautogui.press("f5") # Refresh instead of pressing enter, to fix error in communication happening
         if current_settings['RACE_COUNT'] <= 1:
             AUTOMATE_RACES = False
         return 'On to next race', 200
@@ -261,3 +261,6 @@ if __name__ == '__main__':
     flask_thread.start()
     
     sys.exit(qt_app.exec_())
+
+
+    # Look for modal--league-update, click btn btn--tertiary, maybe press enter
